@@ -1,0 +1,6 @@
+This is a simple (if no too simple) script to crawl twitter and grab Chinese
+users.
+
+Using Tweepy library: https://github.com/diamrem/tweepy
+
+Thanks Twittese Project: http://code.google.com/p/twiteseapi/
