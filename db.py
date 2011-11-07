@@ -23,7 +23,6 @@ def create_twitter_user(cursor):
             foer_cnt integer not null,
             foer_ids text,
             friend_cnt integer not null,
-            friend_ids text,
             desc text,
             location text,
             created_at date not null,
