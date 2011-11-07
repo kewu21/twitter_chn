@@ -30,8 +30,13 @@ def save_user_followers(user):
     for page in c.pages():
         print "start a new page of user ", user.scrn_name
         for tweepy_user in page:
-            print "follower ", tweepy_user.screen_name, " found......"
-            if not tweepy_user.protected:
+            id = tweepy_user.id
+            protected = tweepy_user.protected
+            print "follower -----", tweepy_user.screen_name, "----- found......"
+            if TwitterUser.get_by_id(id):
+                print 'ALREADY in DB!!, skip'
+                continue
+            if not protected:
                 try:
                     if is_chn(tweepy_user):
                         print "and speaks Chinese! Saving...."
@@ -41,29 +46,28 @@ def save_user_followers(user):
                         continue
                 except TweepError:
                     print "tweep breaks!"
-                    raise
-        sleep(15)
+        sleep(51)
     user.update_scanned()
 
 def is_chn_by_timeline(tweepy_user):
     print 'has to check timeline...'
     is_chn = False
     for status in tweepy_user.timeline():
-        if text_is_chn(stauts.text):
+        if text_is_chn(status.text):
             is_chn = True
             break
     print 'taking a rest'
-    sleep(11)
+    sleep(61)
     return is_chn
 
 def is_chn(tweepy_user):
     print 'Check if speak Chinese..'
+    print 'checking most recent status...'
     is_chn = False
     if hasattr(tweepy_user, 'status'):
-        print 'checking most recent status...'
         if text_is_chn(tweepy_user.status.text):
             is_chn = True
-    elif hasattr(tweepy_user, 'description'):
+    elif hasattr(tweepy_user, 'description') and tweepy_user.description:
         print 'trying user description'
         if text_is_chn(tweepy_user.description):
             is_chn = True

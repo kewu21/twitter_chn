@@ -32,8 +32,8 @@ class TwitterUser():
     @classmethod
     def save_tweepy_user(cls, tweepy):
         user = TwitterUser(tweepy.id, tweepy.id_str, tweepy.screen_name, tweepy.name,
-                tweepy.followers_count, tweepy.followers_ids()[0],
-                tweepy.friends_count, api.friends_ids(tweepy.id)[0], tweepy.description,
+                tweepy.followers_count, tweepy.followers_ids(),
+                tweepy.friends_count, api.friends_ids(tweepy.id), tweepy.description,
                 tweepy.location, tweepy.created_at, tweepy.statuses_count,
                 tweepy.verified, False)
         user.save_new()
@@ -104,8 +104,10 @@ class TwitterUser():
             status_cnt, verified, scanned from t_user
             where user_id = ?''', (twitter_id,))
         result = cursor.fetchone()
-        t_user = TwitterUser(*result)
-        return t_user
+        if result:
+            t_user = TwitterUser(*result)
+            return t_user
+        else: return None
 
     @classmethod
     def get_next_unscanned(cls):
@@ -115,5 +117,7 @@ class TwitterUser():
             status_cnt, verified, scanned from t_user
             where scanned=0 limit 0,1''')
         result = cursor.fetchone()
-        t_user = TwitterUser(*result)
-        return t_user
+        if result:
+            t_user = TwitterUser(*result)
+            return t_user
+        else: return None
