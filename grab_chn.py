@@ -6,6 +6,7 @@ from time import sleep
 from twitter_user import TwitterUser
 import re
 import db
+from db import save_non_chn, is_in_no_chn
 
 api = get_api()
 chn_search = re.compile(ur"[\u4e00-\u9fa5]").search
@@ -26,54 +27,88 @@ def fetch():
         print "done!"
 
 def save_user_followers(user):
-    c = Cursor(api.followers,user.user_id)
-    for page in c.pages():
-        print "start a new page of user ", user.scrn_name
+    try:
+        c = Cursor(api.followers,user.user_id)
+    except TweepError:
+        print "tweep breaks!"
+        print TweepError.message
+    while(True):
+        try:
+            print 'taking a rest before move to next page'
+            sleep(10)
+            page = c.pages().next()
+            print "start a new page of user ", user.scrn_name, \
+                'page', c.pages().count
+        except TweepError:
+            print "tweep breaks!"
+            print TweepError.message
+            continue
+        except StopIteration:
+            print "Move to next unscanned"
+            break
+        
         for tweepy_user in page:
-            id = tweepy_user.id
-            protected = tweepy_user.protected
             print "follower -----", tweepy_user.screen_name, "----- found......"
-            if TwitterUser.get_by_id(id):
+            if TwitterUser.get_by_id(tweepy_user.id) or \
+                is_in_no_chn(tweepy_user.id):
                 print 'ALREADY in DB!!, skip'
                 continue
-            if not protected:
-                try:
-                    if is_chn(tweepy_user):
-                        print "and speaks Chinese! Saving...."
-                        TwitterUser.save_tweepy_user(tweepy_user)
-                    else:
-                        print "pitty, s/he is not Chinese Speaker, next..."
-                        continue
-                except TweepError:
-                    print "tweep breaks!"
-        sleep(51)
+            try:
+                if not tweepy_user.protected or \
+                        (tweepy_user.protected and tweepy_user.following):
+                        if is_chn(tweepy_user):
+                            print "and speaks Chinese! Saving...."
+                            TwitterUser.save_tweepy_user(tweepy_user)
+                        else:
+                            save_non_chn(tweepy_user.id)
+                            print "pitty, s/he is not Chinese Speaker, next..."
+                            continue
+            except TweepError:
+                print "tweep breaks!"
+                print TweepError.message
+            try:
+                print "the remaining hit is ", \
+                    api.rate_limit_status()['remaining_hits']
+            except TweepError:
+                print "tweep breaks!"
+                print TweepError.message
+        page =[]
     user.update_scanned()
 
 def is_chn_by_timeline(tweepy_user):
     print 'has to check timeline...'
     is_chn = False
-    for status in tweepy_user.timeline():
-        if text_is_chn(status.text):
-            is_chn = True
-            break
+    try:
+        for status in tweepy_user.timeline():
+            if text_is_chn(status.text):
+                is_chn = True
+                break
+    except TweepError:
+        print "tweep breaks!"
+        print TweepError.message
     print 'taking a rest'
-    sleep(61)
+    sleep(10)
     return is_chn
 
 def is_chn(tweepy_user):
     print 'Check if speak Chinese..'
-    print 'checking most recent status...'
     is_chn = False
+    print 'Checking name...'
+    if text_is_chn(tweepy_user.name):
+        is_chn = True
+        return is_chn
+    print 'checking most recent status...'
     if hasattr(tweepy_user, 'status'):
         if text_is_chn(tweepy_user.status.text):
             is_chn = True
-    elif hasattr(tweepy_user, 'description') and tweepy_user.description:
-        print 'trying user description'
+            return is_chn
+    print 'trying user description'
+    if hasattr(tweepy_user, 'description') and tweepy_user.description:
         if text_is_chn(tweepy_user.description):
             is_chn = True
-    elif tweepy_user.statuses_count > 10:
+            return is_chn
+    if tweepy_user.statuses_count > 10:
         is_chn = is_chn_by_timeline(tweepy_user)
-
     return is_chn
 
 def text_is_chn(text):

@@ -8,7 +8,7 @@ cursor = con.cursor()
 api = get_api()
 class TwitterUser():
     def __init__(self, user_id, user_id_str, scrn_name, name,
-            foer_cnt, foer_ids, friend_cnt, 
+            foer_cnt, friend_cnt, 
             desc, location, created_at, status_cnt, verified,
             scanned):
         self.user_id = user_id
@@ -16,7 +16,6 @@ class TwitterUser():
         self.scrn_name = scrn_name
         self.name = name
         self.foer_cnt = foer_cnt
-        self.foer_ids = ",".join([str(i) for i in foer_ids])
         self.friend_cnt = friend_cnt
         self.desc = desc
         self.location = location
@@ -31,8 +30,7 @@ class TwitterUser():
     @classmethod
     def save_tweepy_user(cls, tweepy):
         user = TwitterUser(tweepy.id, tweepy.id_str, tweepy.screen_name, tweepy.name,
-                tweepy.followers_count, tweepy.followers_ids(),
-                tweepy.friends_count, tweepy.description,
+                tweepy.followers_count, tweepy.friends_count, tweepy.description,
                 tweepy.location, tweepy.created_at, tweepy.statuses_count,
                 tweepy.verified, False)
         user.save_new()
@@ -45,15 +43,14 @@ class TwitterUser():
     def save_new(self):
         self.scanned = False
         info = (self.user_id, self.user_id_str, self.scrn_name, self.name,
-                self.foer_cnt, self.foer_ids, self.friend_cnt,
-                self.desc, self.location,
+                self.foer_cnt, self.friend_cnt, self.desc, self.location,
                 self.created_at, self.status_cnt, self.verified, self.scanned)
         try:
             cursor.execute('''insert into t_user(user_id, user_id_str,
-            screen_name, name, foer_cnt, foer_ids, friend_cnt,
+            screen_name, name, foer_cnt, friend_cnt,
             desc, location, created_at, status_cnt,
             verified, scanned) values 
-            (?,?,?,?,?,?,?,?,?,?,?,?,?)''', info)
+            (?,?,?,?,?,?,?,?,?,?,?,?)''', info)
             con.commit()
         except sqlite.IntegrityError:
             print "can not save user", self.user_id, "(",self.scrn_name,") to the database"
@@ -72,13 +69,12 @@ class TwitterUser():
 
     def update(self):
         info = (self.user_id, self.user_id_str, self.scrn_name, self.name,
-                self.foer_cnt, self.foer_ids, self.friend_cnt,
+                self.foer_cnt, self.friend_cnt,
                 self.desc, self.location, self.created_at,
                 self.status_cnt, self.verified, self.scanned, self.id)
         try:
             cursor.execute('''update t_user set user_id=?, user_id_str=?,
-            screen_name=?, name=?, foer_cnt=?, foer_ids=?,
-            friend_cnt=?, desc=?,
+            screen_name=?, name=?, foer_cnt=?, friend_cnt=?, desc=?,
             location=?, created_at=?, status_cnt=?, verified=?,
             scanned=? where id=?''', info)
             con.commit()
@@ -98,7 +94,7 @@ class TwitterUser():
     @classmethod
     def get_by_id(cls, twitter_id):
         cursor.execute('''select user_id, user_id_str,
-            screen_name, name, foer_cnt, foer_ids, friend_cnt,
+            screen_name, name, foer_cnt, friend_cnt,
             desc, location, created_at, 
             status_cnt, verified, scanned from t_user
             where user_id = ?''', (twitter_id,))
@@ -111,7 +107,7 @@ class TwitterUser():
     @classmethod
     def get_next_unscanned(cls):
         cursor.execute('''select user_id, user_id_str,
-            screen_name, name, foer_cnt, foer_ids, friend_cnt,
+            screen_name, name, foer_cnt, friend_cnt,
             desc, location, created_at, 
             status_cnt, verified, scanned from t_user
             where scanned=0 limit 0,1''')
