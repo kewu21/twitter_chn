@@ -1,5 +1,8 @@
 import sqlite3 as sqlite
+import re
 
+jpn_search = re.compile(ur"[\u3040-\u309F\u30A0-\u30FF]").search
+krn_search = re.compile(ur"[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF]").search
 DATABASE = 'networks'
 
 def init():
@@ -57,7 +60,7 @@ def save_non_chn(id, con=None, cursor=None):
         twitter_id=?''',(id,))
     if not is_in_no_chn(id):
         cursor.execute('''insert into no_chn_twitter(twitter_id) 
-            values (?,)''', (id,))
+            values (?)''', (id,))
         con.commit()
 
 def is_in_no_chn(id, con=None, cursor=None):
@@ -71,6 +74,30 @@ def is_in_no_chn(id, con=None, cursor=None):
     else: 
         existen=False
     return existen
+
+def pick_jnp(con=None, cursor=None):
+    con = con or get_connection()
+    cursor = cursor or con.cursor()
+    cursor.execute('''select id, name, desc from t_user''')
+    result = cursor.fetchall()
+    ids = [row[0] for row in result if \
+        row[2] and jpn_search(row[2])]
+    for id in ids:
+        cursor.execute('''update t_user set scanned = 3 where id
+                =?''',(id, ))
+    con.commit()
+
+def pick_krn(con=None, cursor=None):
+    con = con or get_connection()
+    cursor = cursor or con.cursor()
+    cursor.execute('''select id, name, desc from t_user''')
+    result = cursor.fetchall()
+    ids = [row[0] for row in result if \
+        row[2] and krn_search(row[2])]
+    for id in ids:
+        cursor.execute('''update t_user set scanned = 4 where id
+                =?''',(id, ))
+    con.commit()
         
 def get_connection():
     con = sqlite.connect(DATABASE,

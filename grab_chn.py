@@ -1,6 +1,6 @@
 #!/user/bin/env python
 from tweepy import TweepError
-from twitter_api import get_api
+from twitter_api import get_api2
 from tweepy import Cursor
 from time import sleep
 from twitter_user import TwitterUser
@@ -8,9 +8,10 @@ import re
 import db
 from db import save_non_chn, is_in_no_chn
 
-api = get_api()
+api = get_api2()
 chn_search = re.compile(ur"[\u4e00-\u9fa5]").search
 jpn_search = re.compile(ur"[\u3040-\u309F\u30A0-\u30FF]").search
+krn_search = re.compile(ur"[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF]").search
 
 def init():
     db.init()
@@ -81,7 +82,9 @@ def is_chn_by_timeline(tweepy_user):
     try:
         for status in tweepy_user.timeline():
             if text_is_chn(status.text):
+                print 'chinese!!!', status.text
                 is_chn = True
+                print is_chn
                 break
     except TweepError:
         print "tweep breaks!"
@@ -93,26 +96,40 @@ def is_chn_by_timeline(tweepy_user):
 def is_chn(tweepy_user):
     print 'Check if speak Chinese..'
     is_chn = False
-    print 'Checking name...'
-    if text_is_chn(tweepy_user.name):
-        is_chn = True
-        return is_chn
+    is_jpn = False
+    is_krn = False
     print 'checking most recent status...'
     if hasattr(tweepy_user, 'status'):
         if text_is_chn(tweepy_user.status.text):
             is_chn = True
-            return is_chn
+        elif jpn_search(tweepy_user.status.text):
+            print "has jpn word!"
+            is_jpn = True
+        elif krn_search(tweepy_user.status.text):
+            print "has krn word!"
+            is_krn = True
     print 'trying user description'
     if hasattr(tweepy_user, 'description') and tweepy_user.description:
         if text_is_chn(tweepy_user.description):
             is_chn = True
-            return is_chn
-    if tweepy_user.statuses_count > 10:
+        elif jpn_search(tweepy_user.description):
+            print "has jpn word!"
+            is_jpn = True
+        elif krn_search(tweepy_user.description):
+            print "has krn word!"
+            is_krn = True
+    print 'Checking name...'
+    if text_is_chn(tweepy_user.name):
+        print 'Chinese name!'
+        is_chn = True
+    if tweepy_user.statuses_count > 10 and not is_chn \
+        and not is_jpn and not is_krn:
         is_chn = is_chn_by_timeline(tweepy_user)
-    return is_chn
+    return (is_chn and not is_jpn and not is_krn)
 
 def text_is_chn(text):
-    if chn_search(text) and not jpn_search(text):
+    if chn_search(text) and not jpn_search(text) and not \
+        krn_search(text):
         return True
     else: return False
 
