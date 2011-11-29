@@ -82,7 +82,7 @@ def is_chn_by_timeline(tweepy_user):
     try:
         for status in tweepy_user.timeline():
             if text_is_chn(status.text):
-                print 'chinese!!!', status.text
+                print 'Chinese words found in timeline'
                 is_chn = True
                 print is_chn
                 break

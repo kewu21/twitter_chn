@@ -30,8 +30,8 @@ class TwitterUser():
     @classmethod
     def save_tweepy_user(cls, tweepy):
         user = TwitterUser(tweepy.id, tweepy.id_str, tweepy.screen_name, tweepy.name,
-                tweepy.followers_count, tweepy.friends_count, tweepy.description,
-                tweepy.location, tweepy.created_at, tweepy.statuses_count,
+            tweepy.followers_count, tweepy.friends_count, tweepy.description,
+            tweepy.location, tweepy.created_at, tweepy.statuses_count,
                 tweepy.verified, False)
         user.save_new()
         return user
