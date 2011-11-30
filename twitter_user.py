@@ -1,6 +1,6 @@
 import sqlite3 as sqlite
 import db
-from twitter_api import get_api
+from twitter_api import get_api3 as get_api
 import datetime
 
 con = db.get_connection()
@@ -39,6 +39,30 @@ class TwitterUser():
     @property
     def tweepy_obj(self):
         return api.get_user(self.user_id)
+
+    @classmethod
+    def save_relationship(cls, twitter_id, foer_id):
+        try:
+            cursor.execute('''insert into t_relation(twitter_user, foer) 
+                values (?,?)''', (twitter_id, foer_id))
+            con.commit()
+        except sqlite.IntegrityError:
+            print "can not relation between", id, "and", foer_id, ") to the database"
+
+    @classmethod
+    def get_existing_relation_leading(cls):
+        cursor.execute('''select distinct twitter_user from
+            t_relation''')
+        result = cursor.fetchall() or []
+        return [id for id, in result]
+
+
+
+    @classmethod
+    def get_top_100_by_foer(cls):
+        cursor.execute('''select user_id from t_user where scanned=0 or scanned=1 order by foer_cnt desc limit 0,100''')
+        result = cursor.fetchall() or []
+        return [id for id, in result]
 
     def save_new(self):
         self.scanned = False

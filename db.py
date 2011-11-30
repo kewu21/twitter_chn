@@ -36,7 +36,6 @@ def create_twitter_user(cursor):
     except sqlite.InterfaceError:
         print "can't create table t_user"
 
-
 def create_twitter_relation(cursor):
     try:
         cursor.execute('''drop table if exists t_relation''')
