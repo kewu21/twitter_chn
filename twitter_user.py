@@ -5,6 +5,8 @@ import datetime
 
 con = db.get_connection()
 cursor = con.cursor()
+con_1 = db.get_connection_1()
+cursor_1 = con_1.cursor()
 api = get_api()
 class TwitterUser():
     def __init__(self, user_id, user_id_str, scrn_name, name,
@@ -43,20 +45,24 @@ class TwitterUser():
     @classmethod
     def save_relationship(cls, twitter_id, foer_id):
         try:
-            cursor.execute('''insert into t_relation(twitter_user, foer) 
+            cursor_1.execute('''insert into t_relation(twitter_user, foer) 
                 values (?,?)''', (twitter_id, foer_id))
-            con.commit()
+            con_1.commit()
         except sqlite.IntegrityError:
             print "can not relation between", id, "and", foer_id, ") to the database"
 
     @classmethod
     def get_existing_relation_leading(cls):
-        cursor.execute('''select distinct twitter_user from
+        cursor_1.execute('''select distinct twitter_user from
             t_relation''')
-        result = cursor.fetchall() or []
+        result = cursor_1.fetchall()
         return [id for id, in result]
 
-
+    @classmethod
+    def get_top_100_pair(cls):
+        cursor_1.execute('''select twitter_user, foer from t_relation''')
+        result = cursor_1.fetchall()
+        return result
 
     @classmethod
     def get_top_100_by_foer(cls):

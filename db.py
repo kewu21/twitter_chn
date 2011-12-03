@@ -3,7 +3,7 @@ import re
 
 jpn_search = re.compile(ur"[\u3040-\u309F\u30A0-\u30FF]").search
 krn_search = re.compile(ur"[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF]").search
-DATABASE = 'networks'
+DATABASE = 'networks_1'
 DATABASE_1 = 'networks_1'
 
 def init():
