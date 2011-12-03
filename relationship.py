@@ -54,6 +54,7 @@ def get_relation(top_list):
 if __name__ == '__main__':
     list_to_check = [id for id in TOP_100 if id not in
             TwitterUser.get_existing_relation_leading()]
+    print len(list_to_check), 'to go'
     get_relation(list_to_check)
 
 '''

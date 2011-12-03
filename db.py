@@ -3,7 +3,8 @@ import re
 
 jpn_search = re.compile(ur"[\u3040-\u309F\u30A0-\u30FF]").search
 krn_search = re.compile(ur"[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF]").search
-DATABASE = 'networks'
+DATABASE = 'networks_1'
+DATABASE_1 = 'networks_1'
 
 def init():
     """docstring for init"""
@@ -100,5 +101,10 @@ def pick_krn(con=None, cursor=None):
         
 def get_connection():
     con = sqlite.connect(DATABASE,
+        detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+    return con
+
+def get_connection_1():
+    con = sqlite.connect(DATABASE_1,
         detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
     return con
