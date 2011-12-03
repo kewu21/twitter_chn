@@ -57,7 +57,6 @@ class TwitterUser():
         return [id for id, in result]
 
 
-
     @classmethod
     def get_top_100_by_foer(cls):
         cursor.execute('''select user_id from t_user where scanned=0 or scanned=1 order by foer_cnt desc limit 0,100''')
