@@ -34,6 +34,8 @@ def get_follower_ids(tweepy_obj):
     return ids_list
 
 def get_relation(top_list):
+    top_list.reverse()
+
     for twitter_id in top_list:
         print twitter_id, 'analyzing.....'
         sleep(3)
@@ -52,8 +54,10 @@ def get_relation(top_list):
             print TweepError.message
 
 if __name__ == '__main__':
+    
     list_to_check = [id for id in TOP_100 if id not in
             TwitterUser.get_existing_relation_leading()]
+
     print len(list_to_check), 'to go'
     get_relation(list_to_check)
 

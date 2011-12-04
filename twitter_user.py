@@ -49,7 +49,7 @@ class TwitterUser():
                 values (?,?)''', (twitter_id, foer_id))
             con_1.commit()
         except sqlite.IntegrityError:
-            print "can not relation between", id, "and", foer_id, ") to the database"
+            print "can not relation between", twitter_id, "and", foer_id, ") to the database"
 
     @classmethod
     def get_existing_relation_leading(cls):
